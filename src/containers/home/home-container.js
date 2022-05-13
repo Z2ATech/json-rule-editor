@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { login } from '../../actions/app'
+import { login, updateCode } from '../../actions/app'
 import { uploadRuleset } from '../../actions/ruleset'
 import { TitlePanel } from '../../components/panel/panel'
 import Button from '../../components/button/button'
@@ -14,6 +14,7 @@ import {
   RULE_AVAILABLE_UPLOAD,
   RULE_UPLOAD_ERROR,
 } from '../../constants/messages'
+import store from '../../store'
 
 function readFile(file, cb) {
   // eslint-disable-next-line no-undef
@@ -54,9 +55,10 @@ class HomeContainer extends Component {
     //check if url contains 'code'
     const urlData = window.location.search
     if (urlData.includes('code')) {
-      //logged in
+      //get code and set in store
       const urlParams = new URLSearchParams(location.search)
       const code = urlParams.get('code')
+      store.dispatch(updateCode(code))
     } else {
       window.location.href =
         'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/login?client_id=5dncsjfvgeuu9qmot7rgg9o202&response_type=code&scope=email+openid+profile&redirect_uri=http://localhost:8080'
