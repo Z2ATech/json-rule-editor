@@ -6,8 +6,6 @@ import AppRoutes from '../../routes/app-routes'
 import PropTypes from 'prop-types'
 import { updateRulesetIndex } from '../../actions/ruleset'
 import { updateState } from '../../actions/app'
-// eslint-disable-next-line no-unused-vars
-import { updateCode } from '../../actions/app'
 import { createHashHistory } from 'history'
 class ApplicationContainer extends Component {
   constructor(props) {
@@ -76,6 +74,7 @@ const mapDispatchToProps = dispatch => ({
   setActiveRulesetIndex: name => dispatch(updateRulesetIndex(name)),
   updateState: val => dispatch(updateState(val)),
   updateCode: code => dispatch(updateState(code)),
+  updateToken: token => dispatch(updateState(token)),
 })
 
 export default connect(

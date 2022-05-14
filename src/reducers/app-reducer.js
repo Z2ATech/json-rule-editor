@@ -1,9 +1,15 @@
-import { UPDATE_NAV_STATE, LOG_IN, UPDATE_CODE } from '../actions/action-types'
+import {
+  UPDATE_NAV_STATE,
+  LOG_IN,
+  UPDATE_CODE,
+  UPDATE_TOKEN,
+} from '../actions/action-types'
 
 const initialState = {
   navState: 'closed',
   loggedIn: false,
   code: '',
+  token: '',
 }
 
 const AppReducer = (state = initialState, action) => {
@@ -20,6 +26,10 @@ const AppReducer = (state = initialState, action) => {
       return { ...state, loggedIn: true }
     case UPDATE_CODE: {
       state.code = action.payload.code
+      return { ...state }
+    }
+    case UPDATE_TOKEN: {
+      state.token = action.payload.token
       return { ...state }
     }
     default:

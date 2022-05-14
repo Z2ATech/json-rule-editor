@@ -14,8 +14,11 @@ import {
   RULE_AVAILABLE_UPLOAD,
   RULE_UPLOAD_ERROR,
 } from '../../constants/messages'
-import { updateCode } from '../../actions/code'
+import { updateCode, updateToken } from '../../actions/auth'
+import store from '../../store'
+// eslint-disable-next-line no-unused-vars
 import { getAuthTokens, readRule } from '../../utils/apiservice'
+import { addRuleset } from '../../actions/ruleset'
 
 function readFile(file, cb) {
   // eslint-disable-next-line no-undef
@@ -53,37 +56,56 @@ class HomeContainer extends Component {
   }
 
   async componentDidMount() {
+    const loginUrl =
+      'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/login?client_id=5dncsjfvgeuu9qmot7rgg9o202&response_type=code&scope=email+openid+profile&redirect_uri=http://localhost:8080'
+
     //check if url contains 'code'
     const urlData = window.location.search
     if (urlData.includes('code')) {
-      //get code and set in store
       const urlParams = new URLSearchParams(location.search)
       const code = urlParams.get('code')
       this.props.updateCode(code)
-      // eslint-disable-next-line no-console
-      if (!localStorage.getItem('id_token')) {
-        // get user code
-        try {
-          //set id_token in local storage
-          const { data } = await getAuthTokens(
-            'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/oauth2/token',
-            { code: code },
-            'http://localhost:8080',
-          )
-          localStorage.setItem('id_token', data.id_token)
-        } catch (e) {
-          if (e.response.data.error === 'invalid_grant')
-            alert('Please acquire a fresh token')
+    } else {
+      window.location.href = loginUrl
+    }
+
+    if (store().getState().app.code != '') {
+      //check if token is functional
+      try {
+        const { data } = await getAuthTokens(
+          'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/oauth2/token',
+          { code: store().getState().app.code },
+          'http://localhost:8080',
+        )
+        localStorage.setItem('id_token', data.id_token)
+        this.props.updateToken(data.id_token) // this is not working properly. Using localstore for temp fix
+        //get id_tokens
+      } catch (e) {
+        if (!e.code === 'ERR_BAD_REQUEST') {
+          // eslint-disable-next-line no-console
+          console.log(e)
         }
-      } else {
+      }
+    }
+
+    if (localStorage.getItem('id_token')) {
+      try {
         const { data } = await readRule(
           'https://3bdgfnrxf1.execute-api.us-east-2.amazonaws.com/dev/crudrule',
           localStorage.getItem('id_token'),
         )
+        // load rules into ui
+        for (let i = 0; i < data.length; i++) {
+          const rule = data[i]
+          this.props.addRuleset(rule.rule_name, rule.attributes, rule.decisions)
+        }
+        // eslint-disable-next-line no-console
+        console.log(data)
+      } catch (e) {
+        if (e.code === 'ERR_BAD_REQUEST') {
+          window.location.href = loginUrl
+        }
       }
-    } else {
-      window.location.href =
-        'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/login?client_id=5dncsjfvgeuu9qmot7rgg9o202&response_type=code&scope=email+openid+profile&redirect_uri=http://localhost:8080'
     }
   }
 
@@ -253,6 +275,8 @@ HomeContainer.propTypes = {
   uploadRuleset: PropTypes.func,
   login: PropTypes.func,
   updateCode: PropTypes.func,
+  updateToken: PropTypes.func,
+  addRuleset: PropTypes.func,
   loggedIn: PropTypes.bool,
   rulenames: PropTypes.array,
 }
@@ -263,6 +287,8 @@ HomeContainer.defaultProps = {
   uploadRuleset: () => false,
   login: () => false,
   updateCode: () => false,
+  updateToken: () => false,
+  addRuleset: () => false,
   loggedIn: false,
 }
 
@@ -270,12 +296,16 @@ const mapStateToProps = state => ({
   rulenames: state.ruleset.rulesets.map(r => r.name),
   loggedIn: state.app.loggedIn,
   code: state.app.code,
+  token: state.app.token,
 })
 
 const mapDispatchToProps = dispatch => ({
   login: () => dispatch(login()),
   uploadRuleset: ruleset => dispatch(uploadRuleset(ruleset)),
   updateCode: code => dispatch(updateCode(code)),
+  updateToken: token => dispatch(updateToken(token)),
+  addRuleset: (name, attributes, decisions) =>
+    dispatch(addRuleset(name, attributes, decisions)),
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(HomeContainer)
