@@ -52,7 +52,7 @@ export async function readRule(URL, id_token) {
 export async function createRule(URL, id_token, rule) {
   const data = {
     operation: 'create',
-    ruleJson: { ...rule },
+    ruleJson: { ...rule, rule_name: rule.name },
   }
   const res = await axios({
     method: 'POST',
