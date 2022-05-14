@@ -19,11 +19,8 @@ const AppReducer = (state = initialState, action) => {
     case LOG_IN:
       return { ...state, loggedIn: true }
     case UPDATE_CODE: {
-      let code = ''
-      if (action.payload) {
-        code = action.payload.code
-      }
-      return { ...state, code: code }
+      state.code = action.payload.code
+      return { ...state }
     }
     default:
       return state

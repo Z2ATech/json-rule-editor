@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { login, updateCode } from '../../actions/app'
+import { login } from '../../actions/app'
 import { uploadRuleset } from '../../actions/ruleset'
 import { TitlePanel } from '../../components/panel/panel'
 import Button from '../../components/button/button'
@@ -14,7 +14,8 @@ import {
   RULE_AVAILABLE_UPLOAD,
   RULE_UPLOAD_ERROR,
 } from '../../constants/messages'
-import store from '../../store'
+import { updateCode } from '../../actions/code'
+import { getAuthTokens, readRule } from '../../utils/apiservice'
 
 function readFile(file, cb) {
   // eslint-disable-next-line no-undef
@@ -51,14 +52,35 @@ class HomeContainer extends Component {
     e.preventDefault()
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     //check if url contains 'code'
     const urlData = window.location.search
     if (urlData.includes('code')) {
       //get code and set in store
       const urlParams = new URLSearchParams(location.search)
       const code = urlParams.get('code')
-      store.dispatch(updateCode(code))
+      this.props.updateCode(code)
+      // eslint-disable-next-line no-console
+      if (!localStorage.getItem('id_token')) {
+        // get user code
+        try {
+          //set id_token in local storage
+          const { data } = await getAuthTokens(
+            'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/oauth2/token',
+            { code: code },
+            'http://localhost:8080',
+          )
+          localStorage.setItem('id_token', data.id_token)
+        } catch (e) {
+          if (e.response.data.error === 'invalid_grant')
+            alert('Please acquire a fresh token')
+        }
+      } else {
+        const { data } = await readRule(
+          'https://3bdgfnrxf1.execute-api.us-east-2.amazonaws.com/dev/crudrule',
+          localStorage.getItem('id_token'),
+        )
+      }
     } else {
       window.location.href =
         'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/login?client_id=5dncsjfvgeuu9qmot7rgg9o202&response_type=code&scope=email+openid+profile&redirect_uri=http://localhost:8080'
@@ -230,6 +252,7 @@ HomeContainer.propTypes = {
   ruleset: PropTypes.array,
   uploadRuleset: PropTypes.func,
   login: PropTypes.func,
+  updateCode: PropTypes.func,
   loggedIn: PropTypes.bool,
   rulenames: PropTypes.array,
 }
@@ -239,17 +262,20 @@ HomeContainer.defaultProps = {
   ruleset: [],
   uploadRuleset: () => false,
   login: () => false,
+  updateCode: () => false,
   loggedIn: false,
 }
 
 const mapStateToProps = state => ({
   rulenames: state.ruleset.rulesets.map(r => r.name),
   loggedIn: state.app.loggedIn,
+  code: state.app.code,
 })
 
 const mapDispatchToProps = dispatch => ({
   login: () => dispatch(login()),
   uploadRuleset: ruleset => dispatch(uploadRuleset(ruleset)),
+  updateCode: code => dispatch(updateCode(code)),
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(HomeContainer)

@@ -1,4 +1,4 @@
-import { UPDATE_NAV_STATE, LOG_IN } from './action-types'
+import { UPDATE_NAV_STATE, LOG_IN, UPDATE_CODE } from './action-types'
 
 export function updateState(flag) {
   return {
@@ -13,9 +13,9 @@ export function login() {
   }
 }
 
-export function updateCode(code) {
+export function setCode(code) {
   return {
-    type: LOG_IN,
-    payload: code,
+    type: UPDATE_CODE,
+    payload: { code },
   }
 }
