@@ -50,9 +50,11 @@ export async function readRule(URL, id_token) {
 }
 
 export async function createRule(URL, id_token, rule) {
+  const ruleJson = {...rule, rule_name: rule.name}
+  delete ruleJson.name
   const data = {
     operation: 'create',
-    ruleJson: { ...rule },
+    ruleJson
   }
   const res = await axios({
     method: 'POST',
