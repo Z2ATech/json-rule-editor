@@ -120,6 +120,7 @@ class HomeContainer extends Component {
             // eslint-disable-next-line no-console
             console.log(e)
           }
+          window.location.href = this.loginUrl
         }
       } else {
         window.location.href = this.loginUrl
