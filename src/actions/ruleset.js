@@ -15,6 +15,15 @@ export const clearRuleset = () => dispatch => {
     type: ActionTypes.CLEAR_RULESETS,
   })
 }
+export const removeRuleset =
+  (removeAll = false, ruleSetIndex = 0) =>
+  (dispatch) => {
+    dispatch(updateState('open'));
+    return dispatch({
+      type: ActionTypes.REMOVE_RULESET,
+      payload: { removeAll, ruleSetIndex },
+    });
+  };
 
 export const addRuleset =
   (name, attributes, decisions, initial) => dispatch => {

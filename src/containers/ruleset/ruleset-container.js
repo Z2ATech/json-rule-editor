@@ -55,7 +55,7 @@ class RulesetContainer extends Component {
     //call createRule
     try {
       await createRule(
-        'https://3bdgfnrxf1.execute-api.us-east-2.amazonaws.com/dev/crudrule',
+        `${process.env.apiEndpoint}/crudrule`,
         localStorage.getItem('id_token'),
         this.props.ruleset,
       )

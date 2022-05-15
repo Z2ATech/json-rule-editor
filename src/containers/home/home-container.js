@@ -308,6 +308,7 @@ HomeContainer.defaultProps = {
   updateCode: () => false,
   updateToken: () => false,
   addRuleset: () => false,
+  removeRuleset: () => false,
   loggedIn: false,
 }
 

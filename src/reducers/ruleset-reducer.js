@@ -50,6 +50,25 @@ function ruleset(state = initialState, action = '') {
       }
     }
 
+    case ActionTypes.REMOVE_RULESET: {
+      if (action.payload.removeAll) {
+        return {
+          ...initialState,
+        };
+      } else if (action.payload.ruleSetIndex) {
+        const updatedRulesets = state.rulesets.splice(
+          action.payload.ruleSetIndex,
+          1
+        );
+        return {
+          ...state,
+          rulesets: [...updatedRulesets],
+          activeRuleset: state.rulesets.length,
+        };
+      }
+      break;
+    }
+    
     case ActionTypes.UPDATE_RULESET_INDEX: {
       const { name } = action.payload
       const index = findIndex(state.rulesets, { name })
