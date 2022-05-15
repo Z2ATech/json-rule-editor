@@ -8,7 +8,10 @@ const Title = (props) => {
       <div>{props.title}</div>
       <Button
         label={'Log Out'}
-        onConfirm={() => (window.location.href = process.env.loginUrl)}
+        onConfirm={() => {
+          localStorage.clear();
+          window.location.href = process.env.loginUrl;
+        }}
         classname="primary-btn"
         type="button"
       />
