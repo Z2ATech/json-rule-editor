@@ -17,7 +17,7 @@ import {
 import { updateCode, updateToken } from '../../actions/auth'
 import { getAuthTokens, readRule } from '../../utils/apiservice'
 import { addRuleset } from '../../actions/ruleset'
-import store from '../../store'
+// import store from '../../store'
 
 function readFile(file, cb) {
   var reader = new FileReader()
@@ -52,17 +52,20 @@ class HomeContainer extends Component {
   allowDrop(e) {
     e.preventDefault()
   }
+  //these should be in an env file or similar
+  loginUrl =
+    'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/login?client_id=5dncsjfvgeuu9qmot7rgg9o202&response_type=code&scope=email+openid+profile&redirect_uri=http://localhost:8080'
+  readRulesUrl =
+    'https://3bdgfnrxf1.execute-api.us-east-2.amazonaws.com/dev/crudrule'
+  getTokenUrl =
+    'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/oauth2/token'
 
   async setRule(initial) {
-    const loginUrl =
-      'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/login?client_id=5dncsjfvgeuu9qmot7rgg9o202&response_type=code&scope=email+openid+profile&redirect_uri=http://localhost:8080'
     try {
       const { data } = await readRule(
-        'https://3bdgfnrxf1.execute-api.us-east-2.amazonaws.com/dev/crudrule',
+        this.readRulesUrl,
         localStorage.getItem('id_token'),
       )
-      console.log('state', store().getState())
-      console.log('data', data)
       // load rules into ui
       for (let i = 0; i < data.length; i++) {
         if (i === 0 && initial === true) {
@@ -85,14 +88,13 @@ class HomeContainer extends Component {
       }
     } catch (e) {
       if (e.code === 'ERR_BAD_REQUEST') {
-        window.location.href = loginUrl
+        localStorage.removeItem('id_token')
+        window.location.href = this.loginUrl
       }
     }
   }
 
   async componentDidMount() {
-    const loginUrl =
-      'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/login?client_id=5dncsjfvgeuu9qmot7rgg9o202&response_type=code&scope=email+openid+profile&redirect_uri=http://localhost:8080'
     const urlData = window.location.search
 
     if (localStorage.getItem('id_token')) {
@@ -104,7 +106,7 @@ class HomeContainer extends Component {
         //check if token is functional
         try {
           const { data } = await getAuthTokens(
-            'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/oauth2/token',
+            this.getTokenUrl,
             { code: code },
             'http://localhost:8080',
           )
@@ -119,7 +121,7 @@ class HomeContainer extends Component {
           }
         }
       } else {
-        window.location.href = loginUrl
+        window.location.href = this.loginUrl
       }
     }
   }
