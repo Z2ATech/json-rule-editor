@@ -9,6 +9,13 @@ export const uploadRuleset = ruleset => dispatch => {
   })
 }
 
+export const clearRuleset = () => dispatch => {
+  dispatch(updateState('open'))
+  return dispatch({
+    type: ActionTypes.CLEAR_RULESETS,
+  })
+}
+
 export const addRuleset =
   (name, attributes, decisions, initial) => dispatch => {
     dispatch(updateState('open'))

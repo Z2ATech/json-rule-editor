@@ -24,7 +24,12 @@ function ruleset(state = initialState, action = '') {
         uploadedRules: cloneDeep(rulesets),
       }
     }
-
+    case ActionTypes.CLEAR_RULESETS: {
+      return {
+        ...state,
+        rulesets: [],
+      }
+    }
     case ActionTypes.ADD_RULESET: {
       var rulset = ''
       const { initial } = action.payload

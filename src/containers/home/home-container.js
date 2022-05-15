@@ -16,7 +16,7 @@ import {
 } from '../../constants/messages'
 import { updateCode, updateToken } from '../../actions/auth'
 import { getAuthTokens, readRule } from '../../utils/apiservice'
-import { addRuleset } from '../../actions/ruleset'
+import { addRuleset, clearRuleset } from '../../actions/ruleset'
 // import store from '../../store'
 
 function readFile(file, cb) {
@@ -95,6 +95,7 @@ class HomeContainer extends Component {
   }
 
   async componentDidMount() {
+    await this.props.clearRuleset()
     const urlData = window.location.search
 
     if (localStorage.getItem('id_token')) {
@@ -294,6 +295,7 @@ HomeContainer.propTypes = {
   updateCode: PropTypes.func,
   updateToken: PropTypes.func,
   addRuleset: PropTypes.func,
+  clearRuleset: PropTypes.func,
   loggedIn: PropTypes.bool,
   rulenames: PropTypes.array,
 }
@@ -323,6 +325,7 @@ const mapDispatchToProps = dispatch => ({
   updateToken: token => dispatch(updateToken(token)),
   addRuleset: (name, attributes, decisions) =>
     dispatch(addRuleset(name, attributes, decisions)),
+  clearRuleset: () => dispatch(clearRuleset()),
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(HomeContainer)
