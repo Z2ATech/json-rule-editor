@@ -64,12 +64,12 @@
   "devDependencies": {
     "@hot-loader/react-dom": "16.13.0",
     "babel-eslint": "10.0.3",
+    "dotenv-webpack": "^7.1.0",
     "eslint": "6.8.0",
     "eslint-plugin-react": "7.18.0",
     "husky": "4.2.5",
     "react-hot-loader": "4.12.20",
     "redux-devtools-extension": "2.13.8",
-    "webpack-dev-server": "3.10.1",
-    "dotenv-webpack": "^7.1.0"
+    "webpack-dev-server": "3.10.1"
   }
 }
