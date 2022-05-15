@@ -8,10 +8,7 @@ const Title = (props) => {
       <div>{props.title}</div>
       <Button
         label={'Log Out'}
-        onConfirm={() =>
-          (window.location.href =
-            'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/login?client_id=5dncsjfvgeuu9qmot7rgg9o202&response_type=code&scope=email+openid+profile&redirect_uri=http://localhost:8080')
-        }
+        onConfirm={() => (window.location.href = process.env.loginUrl)}
         classname="primary-btn"
         type="button"
       />

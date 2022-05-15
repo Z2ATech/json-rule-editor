@@ -2,6 +2,7 @@ const HtmlWebPackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer-sunburst').BundleAnalyzerPlugin;
+const Dotenv = require('dotenv-webpack');
 
 
 module.exports = (env, arg) => ({
@@ -69,6 +70,8 @@ module.exports = (env, arg) => ({
             filename: '[name].css',
             chunkFilename: '[id].css'
         }),
+        new Dotenv()
+
         /* new BundleAnalyzerPlugin({
             analyzerMode: 'static',
         }), */

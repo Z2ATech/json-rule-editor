@@ -18,7 +18,7 @@ import { updateCode, updateToken } from '../../actions/auth'
 import store from '../../store'
 // eslint-disable-next-line no-unused-vars
 import { getAuthTokens, readRule } from '../../utils/apiservice'
-import { addRuleset } from '../../actions/ruleset'
+import { addRuleset, removeRuleset } from '../../actions/ruleset'
 
 function readFile(file, cb) {
   // eslint-disable-next-line no-undef
@@ -56,34 +56,33 @@ class HomeContainer extends Component {
   }
 
   async componentDidMount() {
-    const loginUrl =
-      'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/login?client_id=5dncsjfvgeuu9qmot7rgg9o202&response_type=code&scope=email+openid+profile&redirect_uri=http://localhost:8080'
-
+    const loginUrl = process.env.loginUrl;
     //check if url contains 'code'
-    const urlData = window.location.search
+    const urlData = window.location.search;
     if (urlData.includes('code')) {
-      const urlParams = new URLSearchParams(location.search)
-      const code = urlParams.get('code')
-      this.props.updateCode(code)
+      const urlParams = new URLSearchParams(location.search);
+      const code = urlParams.get('code');
+      this.props.updateCode(code);
+      urlParams.delete('code');
     } else {
-      window.location.href = loginUrl
+      window.location.href = loginUrl;
     }
 
     if (store().getState().app.code != '') {
       //check if token is functional
       try {
         const { data } = await getAuthTokens(
-          'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/oauth2/token',
+          process.env.authTokenUrl,
           { code: store().getState().app.code },
-          'http://localhost:8080',
-        )
-        localStorage.setItem('id_token', data.id_token)
-        this.props.updateToken(data.id_token) // this is not working properly. Using localstore for temp fix
+          'http://localhost:8080'
+        );
+        localStorage.setItem('id_token', data.id_token);
+        this.props.updateToken(data.id_token); // this is not working properly. Using localstore for temp fix
         //get id_tokens
       } catch (e) {
         if (!e.code === 'ERR_BAD_REQUEST') {
           // eslint-disable-next-line no-console
-          console.log(e)
+          console.log(e);
         }
       }
     }
@@ -91,19 +90,25 @@ class HomeContainer extends Component {
     if (localStorage.getItem('id_token')) {
       try {
         const { data } = await readRule(
-          'https://3bdgfnrxf1.execute-api.us-east-2.amazonaws.com/dev/crudrule',
-          localStorage.getItem('id_token'),
-        )
+          `${process.env.apiEndpoint}/crudrule`,
+          localStorage.getItem('id_token')
+        );
+
+        this.props.removeRuleset(true);
         // load rules into ui
         for (let i = 0; i < data.length; i++) {
-          const rule = data[i]
-          this.props.addRuleset(rule.rule_name, rule.attributes, rule.decisions)
+          const rule = data[i];
+          this.props.addRuleset(
+            rule.rule_name,
+            rule.attributes,
+            rule.decisions
+          );
         }
         // eslint-disable-next-line no-console
-        console.log(data)
+        console.log(data);
       } catch (e) {
         if (e.code === 'ERR_BAD_REQUEST') {
-          window.location.href = loginUrl
+          window.location.href = loginUrl;
         }
       }
     }
@@ -277,6 +282,7 @@ HomeContainer.propTypes = {
   updateCode: PropTypes.func,
   updateToken: PropTypes.func,
   addRuleset: PropTypes.func,
+  removeRuleset: PropTypes.func,
   loggedIn: PropTypes.bool,
   rulenames: PropTypes.array,
 }
@@ -289,6 +295,7 @@ HomeContainer.defaultProps = {
   updateCode: () => false,
   updateToken: () => false,
   addRuleset: () => false,
+  removeRuleset: () => false,
   loggedIn: false,
 }
 
@@ -306,6 +313,8 @@ const mapDispatchToProps = dispatch => ({
   updateToken: token => dispatch(updateToken(token)),
   addRuleset: (name, attributes, decisions) =>
     dispatch(addRuleset(name, attributes, decisions)),
+  removeRuleset: (name, attributes, decisions) =>
+    dispatch(removeRuleset(name, attributes, decisions)),
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(HomeContainer)

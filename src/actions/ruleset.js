@@ -23,6 +23,15 @@ export const addRuleset = (name, attributes, decisions) => dispatch => {
     })
   }
 }
+export const removeRuleset =
+  (removeAll = false, ruleSetIndex = 0) =>
+  (dispatch) => {
+    dispatch(updateState('open'));
+    return dispatch({
+      type: ActionTypes.REMOVE_RULESET,
+      payload: { removeAll, ruleSetIndex },
+    });
+  };
 
 export const updateRulesetIndex = name => {
   return {
