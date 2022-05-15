@@ -9,20 +9,21 @@ export const uploadRuleset = ruleset => dispatch => {
   })
 }
 
-export const addRuleset = (name, attributes, decisions) => dispatch => {
-  dispatch(updateState('open'))
-  if (attributes && decisions) {
-    return dispatch({
-      type: ActionTypes.ADD_RULESET,
-      payload: { name, attributes, decisions },
-    })
-  } else {
-    return dispatch({
-      type: ActionTypes.ADD_RULESET,
-      payload: { name },
-    })
+export const addRuleset =
+  (name, attributes, decisions, initial) => dispatch => {
+    dispatch(updateState('open'))
+    if (attributes && decisions) {
+      return dispatch({
+        type: ActionTypes.ADD_RULESET,
+        payload: { name, attributes, decisions, initial: initial },
+      })
+    } else {
+      return dispatch({
+        type: ActionTypes.ADD_RULESET,
+        payload: { name },
+      })
+    }
   }
-}
 
 export const updateRulesetIndex = name => {
   return {

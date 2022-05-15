@@ -15,13 +15,11 @@ import {
   RULE_UPLOAD_ERROR,
 } from '../../constants/messages'
 import { updateCode, updateToken } from '../../actions/auth'
-import store from '../../store'
-// eslint-disable-next-line no-unused-vars
 import { getAuthTokens, readRule } from '../../utils/apiservice'
 import { addRuleset } from '../../actions/ruleset'
+import store from '../../store'
 
 function readFile(file, cb) {
-  // eslint-disable-next-line no-undef
   var reader = new FileReader()
   reader.onload = () => {
     try {
@@ -55,56 +53,73 @@ class HomeContainer extends Component {
     e.preventDefault()
   }
 
+  async setRule(initial) {
+    const loginUrl =
+      'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/login?client_id=5dncsjfvgeuu9qmot7rgg9o202&response_type=code&scope=email+openid+profile&redirect_uri=http://localhost:8080'
+    try {
+      const { data } = await readRule(
+        'https://3bdgfnrxf1.execute-api.us-east-2.amazonaws.com/dev/crudrule',
+        localStorage.getItem('id_token'),
+      )
+      console.log('state', store().getState())
+      console.log('data', data)
+      // load rules into ui
+      for (let i = 0; i < data.length; i++) {
+        if (i === 0 && initial === true) {
+          const rule = data[i]
+          this.props.addRuleset(
+            rule.rule_name,
+            rule.attributes,
+            rule.decisions,
+            initial,
+          )
+        } else {
+          const rule = data[i]
+          this.props.addRuleset(
+            rule.rule_name,
+            rule.attributes,
+            rule.decisions,
+            false,
+          )
+        }
+      }
+    } catch (e) {
+      if (e.code === 'ERR_BAD_REQUEST') {
+        window.location.href = loginUrl
+      }
+    }
+  }
+
   async componentDidMount() {
     const loginUrl =
       'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/login?client_id=5dncsjfvgeuu9qmot7rgg9o202&response_type=code&scope=email+openid+profile&redirect_uri=http://localhost:8080'
-
-    //check if url contains 'code'
     const urlData = window.location.search
-    if (urlData.includes('code')) {
-      const urlParams = new URLSearchParams(location.search)
-      const code = urlParams.get('code')
-      this.props.updateCode(code)
-    } else {
-      window.location.href = loginUrl
-    }
-
-    if (store().getState().app.code != '') {
-      //check if token is functional
-      try {
-        const { data } = await getAuthTokens(
-          'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/oauth2/token',
-          { code: store().getState().app.code },
-          'http://localhost:8080',
-        )
-        localStorage.setItem('id_token', data.id_token)
-        this.props.updateToken(data.id_token) // this is not working properly. Using localstore for temp fix
-        //get id_tokens
-      } catch (e) {
-        if (!e.code === 'ERR_BAD_REQUEST') {
-          // eslint-disable-next-line no-console
-          console.log(e)
-        }
-      }
-    }
 
     if (localStorage.getItem('id_token')) {
-      try {
-        const { data } = await readRule(
-          'https://3bdgfnrxf1.execute-api.us-east-2.amazonaws.com/dev/crudrule',
-          localStorage.getItem('id_token'),
-        )
-        // load rules into ui
-        for (let i = 0; i < data.length; i++) {
-          const rule = data[i]
-          this.props.addRuleset(rule.rule_name, rule.attributes, rule.decisions)
+      await this.setRule(true)
+    } else {
+      if (urlData.includes('code')) {
+        const urlParams = new URLSearchParams(location.search)
+        const code = urlParams.get('code')
+        //check if token is functional
+        try {
+          const { data } = await getAuthTokens(
+            'https://ggd-employee-identities-dev.auth.us-east-2.amazoncognito.com/oauth2/token',
+            { code: code },
+            'http://localhost:8080',
+          )
+          localStorage.setItem('id_token', data.id_token)
+          this.props.updateToken(data.id_token) // this is not working properly. Using localstore for temp fix
+          urlParams.delete('code')
+          await this.setRule(true)
+        } catch (e) {
+          if (!e.code === 'ERR_BAD_REQUEST') {
+            // eslint-disable-next-line no-console
+            console.log(e)
+          }
         }
-        // eslint-disable-next-line no-console
-        console.log(data)
-      } catch (e) {
-        if (e.code === 'ERR_BAD_REQUEST') {
-          window.location.href = loginUrl
-        }
+      } else {
+        window.location.href = loginUrl
       }
     }
   }
