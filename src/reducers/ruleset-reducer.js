@@ -24,9 +24,17 @@ function ruleset(state = initialState, action = '') {
         uploadedRules: cloneDeep(rulesets),
       }
     }
-
+    case ActionTypes.CLEAR_RULESETS: {
+      return {
+        ...state,
+        rulesets: [],
+      }
+    }
     case ActionTypes.ADD_RULESET: {
       var rulset = ''
+      const { initial } = action.payload
+      const rulesets = !initial ? state.rulesets : []
+
       if (action.payload.attributes && action.payload.decisions) {
         const { name, attributes, decisions } = action.payload
         rulset = { name, attributes: attributes, decisions: decisions }
@@ -34,10 +42,10 @@ function ruleset(state = initialState, action = '') {
         const { name } = action.payload
         rulset = { name, attributes: [], decisions: [] }
       }
-      const count = state.rulesets.length === 0 ? 0 : state.rulesets.length
+      const count = rulesets.length === 0 ? 0 : rulesets.length
       return {
         ...state,
-        rulesets: state.rulesets.concat(rulset),
+        rulesets: rulesets.concat(rulset),
         activeRuleset: count,
       }
     }

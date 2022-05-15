@@ -59,13 +59,15 @@ ApplicationContainer.propTypes = {
   activeIndex: PropTypes.number,
 }
 
-const mapStateToProps = (state, ownProps) => ({
-  navState: state.app.navState,
-  rulenames: state.ruleset.rulesets.map(r => r.name),
-  loggedIn: state.app.loggedIn,
-  activeIndex: state.ruleset.activeRuleset,
-  ownProps,
-})
+const mapStateToProps = (state, ownProps) => {
+  return {
+    navState: state.app.navState,
+    rulenames: state.ruleset.rulesets.map(r => r.name),
+    loggedIn: state.app.loggedIn,
+    activeIndex: state.ruleset.activeRuleset,
+    ownProps,
+  }
+}
 
 const mapDispatchToProps = dispatch => ({
   handleClick: () => {
